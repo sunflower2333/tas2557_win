@@ -1,0 +1,77 @@
+;
+; tas2557_amp.inf
+;
+
+[Version]
+Signature="$WINDOWS NT$"
+Class       = Media
+ClassGuid   = {4d36e96c-e325-11ce-bfc1-08002be10318}
+Provider=%ManufacturerName%
+CatalogFile=tas2557_amp.cat
+DriverVer=01/01/2023,1.0.0.1
+PnpLockdown=1
+
+[DestinationDirs]
+DefaultDestDir = 12
+tas2557_amp_Device_CoInstaller_CopyFiles = 11
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+tas2557_amp.sys  = 1,,
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll=1 ; make sure the number matches with SourceDisksNames
+
+;*****************************************
+; Install Section
+;*****************************************
+
+[Manufacturer]
+%ManufacturerName%=Standard,NT$ARCH$
+
+[Standard.NT$ARCH$]
+%tas2557_amp.DeviceDesc%=tas2557_amp_Device, ACPI\TTAS2557
+
+[tas2557_amp_Device.NT]
+CopyFiles=Drivers_Dir
+
+[Drivers_Dir]
+tas2557_amp.sys
+
+;-------------- Service installation
+[tas2557_amp_Device.NT.Services]
+AddService = tas2557_amp,%SPSVCINST_ASSOCSERVICE%, tas2557_amp_Service_Inst
+
+; -------------- tas2557_amp driver install sections
+[tas2557_amp_Service_Inst]
+DisplayName    = %tas2557_amp.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\tas2557_amp.sys
+
+;
+;--- tas2557_amp_Device Coinstaller installation ------
+;
+
+[tas2557_amp_Device.NT.CoInstallers]
+AddReg=tas2557_amp_Device_CoInstaller_AddReg
+CopyFiles=tas2557_amp_Device_CoInstaller_CopyFiles
+
+[tas2557_amp_Device_CoInstaller_AddReg]
+HKR,,CoInstallers32,0x00010000, "WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll,WdfCoInstaller"
+
+[tas2557_amp_Device_CoInstaller_CopyFiles]
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll
+
+[tas2557_amp_Device.NT.Wdf]
+KmdfService =  tas2557_amp, tas2557_amp_wdfsect
+[tas2557_amp_wdfsect]
+KmdfLibraryVersion = $KMDFVERSION$
+
+[Strings]
+SPSVCINST_ASSOCSERVICE= 0x00000002
+ManufacturerName="WoA msmnile" ;TODO: Replace with your manufacturer name
+DiskName = "tas2557_amp Installation Disk"
+tas2557_amp.DeviceDesc = "TI TAS2557 Smart PA"
+tas2557_amp.SVCDESC = "tas2557_amp Service"
